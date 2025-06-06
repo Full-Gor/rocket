@@ -1,0 +1,12 @@
+{
+  "name": "rocket-game",
+  "version": "1.0.0",
+  "description": "Jeu de fusée avec scores en ligne",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

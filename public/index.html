@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusée Game 🚀</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        #starter {
+            font-size: 40px;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        #countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        #game-container {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            margin: 0 auto 20px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border: 3px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #rocket {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 80px;
+            background: linear-gradient(to bottom, #ff6b6b, #4ecdc4);
+            border-radius: 20px 20px 5px 5px;
+            transition: bottom 0.1s ease;
+        }
+
+        #rocket::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 20px solid #ff6b6b;
+        }
+
+        #rocket::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 15px;
+            background: linear-gradient(45deg, #ff4757, #ffa502);
+            border-radius: 0 0 10px 10px;
+        }
+
+        #finish-line {
+            position: absolute;
+            top: 80px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                #ff0000,
+                #ff0000 20px,
+                #ffffff 20px,
+                #ffffff 40px
+            );
+            border: 2px solid #333;
+        }
+
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .explosion-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .score-board {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .score-board h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .score-item:last-child {
+            border-bottom: none;
+        }
+
+        .current-score {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse-fast {
+            animation: pulse 0.8s infinite !important;
+        }
+
+        #playerName {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .game-info {
+                flex-direction: column;
+            }
+            
+            #game-container {
+                width: 250px;
+                height: 500px;
+            }
+            
+            #clickButton {
+                font-size: 18px !important;
+                padding: 15px 25px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fusée Game 🚀</h1>
+        
+        <div class="game-info">
+            <div id="countdown">Temps: 10.0s</div>
+            <div class="current-score">Score: <span id="current-score">0</span></div>
+        </div>
+
+        <div id="pseudo-input" style="margin-bottom: 20px;">
+            <input type="text" id="playerName" placeholder="Entrez votre pseudo" maxlength="15" 
+                   style="padding: 10px; font-size: 16px; border: none; border-radius: 10px; margin-right: 10px; text-align: center;">
+            <button id="startGameButton" style="background: linear-gradient(45deg, #28a745, #20c997);">Commencer</button>
+        </div>
+
+        <p id="starter">Entrez votre pseudo pour commencer !</p>
+        
+        <div id="game-container">
+            <div id="finish-line"></div>
+            <div id="rocket"></div>
+        </div>
+
+        <div class="confetti-container" id="confetti-container"></div>
+        
+        <div>
+            <button id="clickButton" disabled style="font-size: 24px; padding: 20px 40px; background: linear-gradient(45deg, #ff6b6b, #ff4757); animation: pulse 1.5s infinite; box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);">
+                🚀 CLIQUEZ POUR DÉCOLLER ! 🚀
+            </button>
+            <button id="restartButton">Nouveau Jeu</button>
+        </div>
+
+        <div class="score-board">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>🏆 Scores en ligne</h3>
+                <div>
+                    <span id="online-status" style="padding: 5px 10px; border-radius: 15px; font-size: 12px;">🔄 Chargement...</span>
+                    <button id="refresh-scores" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;">🔄 Actualiser</button>
+                </div>
+            </div>
+            <div id="score-history"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables du jeu
+        let gameStarted = false;
+        let gameEnded = false;
+        let rocketPosition = 10;
+        let timeLeft = 10.0;
+        let gameInterval;
+        let countdownInterval;
+        let currentScore = 0;
+        let playerName = '';
+        let gameHistory = [];
+        
+        // Configuration API - Utilise les fonctions Vercel
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : ''; // En production, utilise le même domaine
+        
+        let isOnline = false;
+
+        // Éléments DOM
+        const starterDisplay = document.getElementById("starter");
+        const button = document.getElementById("clickButton");
+        const restartButton = document.getElementById("restartButton");
+        const startGameButton = document.getElementById("startGameButton");
+        const playerNameInput = document.getElementById("playerName");
+        const rocket = document.getElementById("rocket");
+        const countdownDisplay = document.getElementById("countdown");
+        const currentScoreDisplay = document.getElementById("current-score");
+        const scoreHistoryDisplay = document.getElementById("score-history");
+        const confettiContainer = document.getElementById("confetti-container");
+        const onlineStatus = document.getElementById("online-status");
+        const refreshButton = document.getElementById("refresh-scores");
+
+        // Fonctions API pour Vercel
+        async function loadScoresFromAPI() {
+            try {
+                onlineStatus.textContent = '🔄 Connexion...';
+                onlineStatus.style.background = '#ffa502';
+                onlineStatus.style.color = 'white';
+                
+                console.log('Tentative de connexion à l\'API Vercel...');
+                
+                const response = await fetch(`${API_BASE}/api/scores`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const scores = data.scores || [];
+                
+                console.log('Scores reçus:', scores);
+                
+                gameHistory = scores;
+                
+                onlineStatus.textContent = '🟢 En ligne';
+                onlineStatus.style.background = '#2ed573';
+                isOnline = true;
+                
+                console.log('✅ Connexion réussie! Scores chargés:', gameHistory.length);
+                displayScoreHistory();
+                
+            } catch (error) {
+                console.error('❌ Erreur API:', error);
+                
+                onlineStatus.textContent = '🔴 Hors ligne';
+                onlineStatus.style.background = '#ff4757';
+                isOnline = false;
+                
+                // Charger les scores locaux en fallback
+                gameHistory = JSON.parse(localStorage.getItem('rocketGameHistory') || '[]');
+                displayScoreHistory();
+            }
+        }
+
+        async function saveScoreToAPI(scoreData) {
+            try {
+                console.log('Tentative de sauvegarde du score:', scoreData);
+                
+                const response = await fetch(`${API_BASE}/api/score`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(scoreData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur sauvegarde: ${response.status}`);
+                }
+                
+                console.log('✅ Score sauvegardé en ligne!');
+                
+                // Recharger les scores
+                await loadScoresFromAPI();
+                
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde:', error);
+                
+                // Sauvegarde locale en fallback
+                const localHistory = JSON.parse(localStorage.getItem('rocketGameHistory') || '[]');
+                localHistory.unshift(scoreData);
+                if (localHistory.length > 20) {
+                    localHistory.splice(20);
+                }
+                localStorage.setItem('rocketGameHistory', JSON.stringify(localHistory));
+                gameHistory = localHistory;
+                displayScoreHistory();
+                
+                onlineStatus.textContent = '🔴 Sauvé localement';
+                onlineStatus.style.background = '#ff9500';
+                
+                throw error;
+            }
+        }
+
+        function startGame() {
+            if (!playerName.trim()) {
+                alert('Veuillez entrer votre pseudo !');
+                return;
+            }
+            
+            resetGame();
+            
+            starterDisplay.textContent = "🟥";
+            setTimeout(() => {
+                starterDisplay.textContent = "🟨";
+            }, 1000);
+            
+            setTimeout(() => {
+                starterDisplay.textContent = "🟩 GO !";
+                button.disabled = false;
+                button.classList.add('pulse-fast');
+                gameStarted = true;
+                startCountdown();
+            }, 2000);
+        }
+
+        function initializeGame() {
+            playerName = playerNameInput.value.trim();
+            if (playerName) {
+                document.getElementById('pseudo-input').style.display = 'none';
+                startGame();
+            } else {
+                alert('Veuillez entrer votre pseudo !');
+                playerNameInput.focus();
+            }
+        }
+
+        function resetGame() {
+            gameStarted = false;
+            gameEnded = false;
+            rocketPosition = 10;
+            timeLeft = 10.0;
+            currentScore = 0;
+            button.disabled = true;
+            button.classList.remove('pulse-fast');
+            rocket.style.bottom = rocketPosition + "px";
+            rocket.style.display = "block";
+            countdownDisplay.textContent = "Temps: 10.0s";
+            currentScoreDisplay.textContent = currentScore;
+            clearInterval(gameInterval);
+            clearInterval(countdownInterval);
+            confettiContainer.innerHTML = "";
+            
+            // Nettoyer les particules d'explosion
+            const particles = document.querySelectorAll('.explosion-particle');
+            particles.forEach(particle => particle.remove());
+        }
+
+        function restartWithNewPlayer() {
+            document.getElementById('pseudo-input').style.display = 'block';
+            playerNameInput.value = '';
+            playerNameInput.focus();
+            starterDisplay.textContent = "Entrez votre pseudo pour commencer !";
+            resetGame();
+        }
+
+        function startCountdown() {
+            countdownInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                countdownDisplay.textContent = `Temps: ${timeLeft.toFixed(1)}s`;
+                
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    countdownDisplay.textContent = "Temps: 0.0s";
+                    explodeRocket();
+                }
+            }, 100);
+        }
+
+        function moveRocket() {
+            if (!gameStarted || gameEnded) return;
+            
+            rocketPosition += 25;
+            rocket.style.bottom = rocketPosition + "px";
+            currentScore += 10;
+            currentScoreDisplay.textContent = currentScore;
+            
+            // Vérifier si la fusée a atteint la ligne d'arrivée
+            if (rocketPosition >= 520) {
+                winGame();
+            }
+        }
+
+        function winGame() {
+            gameEnded = true;
+            clearInterval(countdownInterval);
+            button.disabled = true;
+            button.classList.remove('pulse-fast');
+            
+            // Bonus de temps
+            const timeBonus = Math.floor(timeLeft * 50);
+            currentScore += timeBonus;
+            currentScoreDisplay.textContent = currentScore;
+            
+            // Sauvegarder le score
+            saveScore(currentScore, true);
+            
+            // Animation de confettis
+            createConfetti();
+            
+            starterDisplay.textContent = `🎉 Bravo ${playerName} ! Bonus temps: +${timeBonus}`;
+        }
+
+        function explodeRocket() {
+            gameEnded = true;
+            clearInterval(countdownInterval);
+            button.disabled = true;
+            button.classList.remove('pulse-fast');
+            rocket.style.display = "none";
+            
+            // Sauvegarder le score
+            saveScore(currentScore, false);
+            
+            // Animation d'explosion
+            createExplosion();
+            
+            starterDisplay.textContent = `💥 ${playerName}, votre fusée a explosé !`;
+        }
+
+        function createExplosion() {
+            const rocketRect = rocket.getBoundingClientRect();
+            const containerRect = document.getElementById('game-container').getBoundingClientRect();
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
+            
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const startX = rocketRect.left + rocketRect.width / 2 - containerRect.left;
+                const startY = rocketRect.top + rocketRect.height / 2 - containerRect.top;
+                
+                particle.style.left = startX + 'px';
+                particle.style.top = startY + 'px';
+                
+                document.getElementById('game-container').appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 100 + 50;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                let x = startX;
+                let y = startY;
+                let life = 1.0;
+                
+                const animateParticle = () => {
+                    x += vx * 0.02;
+                    y += vy * 0.02;
+                    life -= 0.02;
+                    
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.opacity = life;
+                    
+                    if (life > 0) {
+                        requestAnimationFrame(animateParticle);
+                    } else {
+                        particle.remove();
+                    }
+                };
+                
+                requestAnimationFrame(animateParticle);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
+            
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    
+                    confettiContainer.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }, i * 30);
+            }
+        }
+
+        function saveScore(score, won) {
+            const gameData = {
+                player: playerName,
+                score: score,
+                won: won,
+                timeRemaining: won ? timeLeft.toFixed(1) : 0
+            };
+            
+            // Sauvegarder en ligne
+            saveScoreToAPI(gameData).catch(() => {
+                // En cas d'erreur, afficher un message
+                console.log('Score sauvegardé localement uniquement');
+            });
+        }
+
+        function displayScoreHistory() {
+            if (gameHistory.length === 0) {
+                scoreHistoryDisplay.innerHTML = `
+                    <div class="score-item">
+                        <span>Aucun score enregistré</span>
+                        <span>${isOnline ? '🌐' : '💾'}</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Afficher les 20 meilleurs scores
+            const topScores = gameHistory.slice(0, 20);
+            
+            scoreHistoryDisplay.innerHTML = topScores.map((game, index) => {
+                const rank = index + 1;
+                const trophy = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                const gameDate = game.date || new Date(game.createdAt).toLocaleString('fr-FR');
+                const source = isOnline ? '🌐' : '💾'; // 🌐 = en ligne, 💾 = local
+                
+                return `
+                    <div class="score-item">
+                        <span><strong>${trophy} ${game.player}</strong> - ${gameDate} ${source}</span>
+                        <span>${game.won ? '🏆' : '💥'} ${game.score} pts ${game.won ? `(${game.timeRemaining}s)` : ''}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Événements
+        button.addEventListener("click", moveRocket);
+        restartButton.addEventListener("click", restartWithNewPlayer);
+        startGameButton.addEventListener("click", initializeGame);
+        refreshButton.addEventListener("click", loadScoresFromAPI);
+        
+        // Validation du pseudo avec Entrée
+        playerNameInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                initializeGame();
+            }
+        });
+
+        // Initialisation
+        console.log('🚀 Démarrage du jeu Fusée sur Vercel...');
+        loadScoresFromAPI();
+        playerNameInput.focus();
+
+        // Support clavier pour le jeu
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space" && !button.disabled) {
+                e.preventDefault();
+                moveRocket();
+            }
+        });
+    </script>
+</body>
+</html>

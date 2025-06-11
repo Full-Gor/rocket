@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "description": "Jeu de fusée avec scores en ligne",
   "scripts": {
+    "test": "npx jest",
     "dev": "vercel dev",
     "deploy": "vercel --prod"
-  },
-  "devDependencies": {
-    "vercel": "^32.0.0"
   }
 }
